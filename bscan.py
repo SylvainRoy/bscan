@@ -77,30 +77,39 @@ def changePerspective(img, contour, newcontour):
     return cv2.warpPerspective(img, M, (cols,rows))
 
 
+def inputFiles(options, args):
+    """Select files to consider based on command lines arguments."""
+    # Files are given in args
+    files = args
+    # ... or from the current directory
+    if len(args) == 0:
+        files = [os.path.join(".", f) for f in os.listdir(".")]
+    # Filter out all the files that are not jgp images
+    imgfiles = [f for f in files if f[-4:] in [".jpg", ".JPG"]]
+    return imgfiles
+
 
 #
 # Commands
 #
 
 def splitCommand(options, args):
-    """Isolate the pictures up to a black one in a sub folder."""
-    path = "."
-    files = os.listdir(path)
+    """Move the pictures up to a black one in a sub folder."""
+    imgfiles = inputFiles(options, args)
     # Determine name of sub folder
     folder = ""
     i = 0
     while True:
         folder = "document_{:0>2}".format(i)
-        if folder not in files:
+        if folder not in os.listdir("."):
             break
         i += 1
     # List pictures to isolate
     print "Searching next black image: "
-    imgfiles = [f for f in files if f[-4:] in [".jpg", ".JPG"]]
     index = 0
     for idx, imgfile in enumerate(imgfiles):
         print imgfile
-        img = cv2.imread(os.path.join(path, imgfile))
+        img = cv2.imread(imgfile)
         index = idx
         if isBlack(img):
             break
@@ -111,13 +120,13 @@ def splitCommand(options, args):
         if not options.dryrun:
             os.mkdir(folder)
             for f in imgtomove:
-                print os.path.join(path, f), os.path.join(path, folder, f)
-                os.rename(os.path.join(path, f),
-                          os.path.join(path, folder, f))
+                print f, os.path.join(".", folder, os.path.basename(f))
+                os.rename(f,
+                          os.path.join(".", folder, os.path.basename(f)))
     else:
-        print "\nThis file will be removed to {}".format(imgfiles[0])
+        print "\nThis 'black' file will be removed to {}".format(imgfiles[0])
         if not options.dryrun:
-            os.remove(os.path.join(path, imgfiles[0]))
+            os.remove(imgfiles[0])
 
 
 def rotateCommand(options, args):
@@ -127,55 +136,36 @@ def rotateCommand(options, args):
     if options.rotate == "r": angle = 90
     if options.rotate == "l": angle = -90
     if options.rotate == "b": angle = 180
-    path = "."
-    # If no arg, select all the files of the directory
-    files = args
-    if len(args) == 0:
-        files = os.listdir(path)
-    # Filter out all the files that are not jgp
-    imgfiles = [f for f in files if f[-4:] in [".jpg", ".JPG"]]
+    imgfiles = inputFiles(options, args)
     # Rotate all the images
     for imgfile in imgfiles:
         print "Rotating ", imgfile, "by an angle of", angle
         if not options.dryrun:
-            img = cv2.imread(os.path.join(path, imgfile))
+            img = cv2.imread(imgfile)
             img = ndimage.rotate(img, angle)
-            cv2.imwrite(os.path.join(path, imgfile), img)
+            cv2.imwrite(imgfile, img)
 
 
 def reframeCommand(options, args):
     """Reframe images on the scanned page."""
-    path = "."
-    # If no arg, select all the files of the directory
-    files = args
-    if len(args) == 0:
-        files = os.listdir(path)
-    # Filter out all the files that are not jgp
-    imgfiles = [f for f in files if f[-4:] in [".jpg", ".JPG"]]
+    imgfiles = inputFiles(options, args)
     # Reframe all the images
     for imgfile in imgfiles:
         print "Reframing ", imgfile
         if not options.dryrun:
-            img = cv2.imread(os.path.join(path, imgfile))
+            img = cv2.imread(imgfile)
             contour = findPageContour(img)
             a4rows, a4cols = computeA4subarea(img)
             newcontour = [[0,0], [0,a4rows], [a4cols,a4rows], [a4cols,0]]
             img = changePerspective(img, contour, newcontour)
             img = img[0:a4rows, 0:a4cols]
-            cv2.imwrite(os.path.join(path, imgfile), img)
+            cv2.imwrite(imgfile, img)
 
 
 def generatePdfCommand(options, args):
     """Build a PDF doc with the images."""
-    path = "."
-    # If no arg, select all the files of the directory
-    files = args
-    if len(args) == 0:
-        files = os.listdir(path)
-    # Filter out all the files that are not jpg
-    imgfiles = [f for f in files if f[-4:] in [".jpg", ".JPG"]]
+    imgfiles = inputFiles(options, args)
     # Generate the PDF doc
-    imgfiles = [os.path.join(path, i) for i in imgfiles]
     pdf_bytes = img2pdf.convert(imgfiles, dpi=25)
     file = open("out.pdf","wb")
     file.write(pdf_bytes)
