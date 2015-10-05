@@ -5,7 +5,7 @@ import os
 import cv2
 import numpy as np
 from scipy import ndimage
-
+import img2pdf
 
 
 
@@ -144,7 +144,7 @@ def rotateCommand(options, args):
 
 
 def reframeCommand(options, args):
-    """Reframe all the images in the folder."""
+    """Reframe images on the scanned page."""
     path = "."
     # If no arg, select all the files of the directory
     files = args
@@ -163,6 +163,23 @@ def reframeCommand(options, args):
             img = changePerspective(img, contour, newcontour)
             img = img[0:a4rows, 0:a4cols]
             cv2.imwrite(os.path.join(path, imgfile), img)
+
+
+def generatePdfCommand(options, args):
+    """Build a PDF doc with the images."""
+    path = "."
+    # If no arg, select all the files of the directory
+    files = args
+    if len(args) == 0:
+        files = os.listdir(path)
+    # Filter out all the files that are not jpg
+    imgfiles = [f for f in files if f[-4:] in [".jpg", ".JPG"]]
+    # Generate the PDF doc
+    imgfiles = [os.path.join(path, i) for i in imgfiles]
+    pdf_bytes = img2pdf.convert(imgfiles, dpi=25)
+    file = open("out.pdf","wb")
+    file.write(pdf_bytes)
+    file.close()
 
 
 #
@@ -208,6 +225,8 @@ def main():
         rotateCommand(options, args)
     elif options.reframe:
         reframeCommand(options, args)
+    elif options.generate:
+        generatePdfCommand(options, args)
     else:
         print "Please choose a command."
 
