@@ -1,0 +1,49 @@
+# Todo:
+
+ * Generate pdf doc
+ * Improve contrast
+ * Better user interface
+ * Fix git... Urgently!!
+
+
+# Procedure:
+
+ * Set up the table
+   * Camera need to be "far". Better to seat on a small end.
+   * Put heavy stuff on dark sheet to avoid it moving.
+ * Set up the camera
+   * Camera on tripod. As high as possible.
+   * Ensure button is “on top”.
+   * Ensure definition is S1.
+   * Ensure it’s on remote command.
+   * Set up zoom and auto focus. Then go to manual focus.
+   * Get alignment stuff to ensure page in the area.
+
+
+# Camera:
+
+## On the Canon
+
+The mode S1 is the minimum to use.
+It gives picture of ~700KB before reframing. Probably less afterward.
+So, 1000 pages => 700Mb. Big but OK.
+
+No need to go S1+ (the one with a portion of circle next to it), it's bigger (1.3 MB) and not much better.
+
+The maximum resolution gives images of 6MB.
+Ok for doc of no more than 100 pages...
+Then, the definition is clearly better and the writing does not suffer from pixelisation.
+
+## On the iPhone
+
+An image is roughly 2MB.
+It's clearly better than the mode S1+... It would make an excellent scan.
+
+Photos taken inside are not usable!
+Only works with great luminosity.
+
+## Conclusion:
+
+Use the Canon.
+Preferably Outside but flask does the job.
+Definition: S1
