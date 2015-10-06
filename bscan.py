@@ -10,7 +10,7 @@ import math
 
 
 def isBlack(img):
-    """Return True if an image is mostly black."""
+    """Return True if the image is mostly black."""
     rows, cols, ch = img.shape
     sumb = sumt = 0
     div = 10
@@ -71,10 +71,9 @@ def rotateAboutCenter(src, angle, scale=1.):
     # part of the transform
     rot_mat[0,2] += rot_move[0]
     rot_mat[1,2] += rot_move[1]
-    img = cv2.warpAffine(src, rot_mat,
-                         (int(math.ceil(nw)), int(math.ceil(nh))),
+    return cv2.warpAffine(src, rot_mat,
+                          (int(math.ceil(nw)), int(math.ceil(nh))),
                          flags=cv2.INTER_LANCZOS4)
-    return img
 
 
 def computeA4subarea(img):
