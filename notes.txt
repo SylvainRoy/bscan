@@ -1,9 +1,9 @@
 # Todo:
 
- * Generate pdf doc
- * Improve contrast
  * Better user interface
- * Fix git... Urgently!!
+   * command should not be an option
+   * there should be a "do it all" command
+ * check printing of pdf file generated
 
 
 # Procedure:

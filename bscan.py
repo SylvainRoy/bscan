@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from scipy import ndimage
 import img2pdf
-
+import math
 
 
 def isBlack(img):
@@ -52,6 +52,29 @@ def findPageContour(img):
     ordered_indexes = [topleft, bottomleft, bottomright, topright]
     ordered_contour = [approx[i] for i in ordered_indexes]
     return ordered_contour
+
+
+def rotateAboutCenter(src, angle, scale=1.):
+    """Rotate an image by a given angle."""
+    w = src.shape[1]
+    h = src.shape[0]
+    rangle = np.deg2rad(angle)  # angle in radians
+    # now calculate new image width and height
+    nw = (abs(np.sin(rangle)*h) + abs(np.cos(rangle)*w))*scale
+    nh = (abs(np.cos(rangle)*h) + abs(np.sin(rangle)*w))*scale
+    # ask OpenCV for the rotation matrix
+    rot_mat = cv2.getRotationMatrix2D((nw*0.5, nh*0.5), angle, scale)
+    # calculate the move from the old center to the new center combined
+    # with the rotation
+    rot_move = np.dot(rot_mat, np.array([(nw-w)*0.5, (nh-h)*0.5,0]))
+    # the move only affects the translation, so update the translation
+    # part of the transform
+    rot_mat[0,2] += rot_move[0]
+    rot_mat[1,2] += rot_move[1]
+    img = cv2.warpAffine(src, rot_mat,
+                         (int(math.ceil(nw)), int(math.ceil(nh))),
+                         flags=cv2.INTER_LANCZOS4)
+    return img
 
 
 def computeA4subarea(img):
@@ -142,12 +165,12 @@ def rotateCommand(options, args):
         print "Rotating ", imgfile, "by an angle of", angle
         if not options.dryrun:
             img = cv2.imread(imgfile)
-            img = ndimage.rotate(img, angle)
+            img = rotateAboutCenter(img, angle)
             cv2.imwrite(imgfile, img)
 
 
 def reframeCommand(options, args):
-    """Reframe images on the scanned page."""
+    """Reframe the image on the scanned page."""
     imgfiles = inputFiles(options, args)
     # Reframe all the images
     for imgfile in imgfiles:
@@ -159,6 +182,20 @@ def reframeCommand(options, args):
             newcontour = [[0,0], [0,a4rows], [a4cols,a4rows], [a4cols,0]]
             img = changePerspective(img, contour, newcontour)
             img = img[0:a4rows, 0:a4cols]
+            cv2.imwrite(imgfile, img)
+
+
+def contrastCommand(options, args):
+    """Improve the contrast of the image."""
+    imgfiles = inputFiles(options, args)
+    # Reframe all the images
+    for imgfile in imgfiles:
+        print "improving contrast of ", imgfile
+        if not options.dryrun:
+            img = cv2.imread(imgfile, 0)
+            #cv2.equalizeHist(img)
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+            img = clahe.apply(img)
             cv2.imwrite(imgfile, img)
 
 
@@ -190,15 +227,18 @@ def parseOptions():
     parser.add_option("-i", "--isolate",
                       action="store_true", dest="split", default=False,
                       help="Isolate first bunch of images in a sub folder.")
-    parser.add_option("-g", "--generate",
-                      action="store_true", dest="generate", default=False,
-                      help="Generate PDF doc.")
-    parser.add_option("-f", "--reframe",
-                      action="store_true", dest="reframe", default=False,
-                      help="Reframe the images.")
     parser.add_option("-r", "--rotate",
                       action="store", dest="rotate", default=None,
                       help="Rotate the images in the given direction.")
+    parser.add_option("-f", "--reframe",
+                      action="store_true", dest="reframe", default=False,
+                      help="Reframe the images.")
+    parser.add_option("-c", "--contrast",
+                      action="store_true", dest="contrast", default=False,
+                      help="Improve images contrast.")
+    parser.add_option("-g", "--generate",
+                      action="store_true", dest="generate", default=False,
+                      help="Generate PDF doc.")
     parser.add_option("-d", "--dry-run",
                       action="store_true", dest="dryrun", default=False,
                       help="Dry-run: no change done.")
@@ -213,6 +253,10 @@ def main():
         splitCommand(options, args)
     elif options.rotate is not None:
         rotateCommand(options, args)
+    elif options.rotate2 is not None:
+        newRotateCommand(options, args)
+    elif options.contrast:
+        contrastCommand(options, args)
     elif options.reframe:
         reframeCommand(options, args)
     elif options.generate:
