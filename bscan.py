@@ -252,8 +252,6 @@ def main():
         splitCommand(options, args)
     elif options.rotate is not None:
         rotateCommand(options, args)
-    elif options.rotate2 is not None:
-        newRotateCommand(options, args)
     elif options.contrast:
         contrastCommand(options, args)
     elif options.reframe:
