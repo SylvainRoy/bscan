@@ -23,6 +23,25 @@ def isBlack(img):
     return 1.0 * sumb / sumt > 0.9
 
 
+def findContourWithLonguestSegment(contours):
+    """Return the contour which contain the longest segment."""
+    maxi = 0
+    index = -1
+    for i, contour in enumerate(contours):
+        # Compute segment lengths and find longest one
+        c = contour.tolist()
+        seglens = [math.sqrt((x2-x1)**2+(y2-y1)**2)
+                   for ([[[x1, y1]], [[x2, y2]]])
+                   in zip(c,
+                          c[1:]+c[:1])]
+        longuest = max(seglens)
+        # Save index of this contour if it has the longest segment
+        if longuest > maxi:
+            maxi = longuest
+            index = i
+    return contours[index]
+
+
 def findPageContour(img):
     """Return the contour of the scanned page within the image.
     The first point is the one at top left. Order is counter clockwise."""
@@ -32,25 +51,26 @@ def findPageContour(img):
     contours, hierarchy = cv2.findContours(thresh,
                                            cv2.RETR_TREE,
                                            cv2.CHAIN_APPROX_SIMPLE)
-    # The longest contour is the one surrounding the page
-    lengths = [len(cnt) for cnt in contours]
-    longest = max(lengths)
-    indexLongest = lengths.index(longest)
-    cnt = contours[indexLongest]
-    # Let's approximate the longest contour to have only four points
-    epsilon = 0.1*cv2.arcLength(cnt, True)
-    approx = cv2.approxPolyDP(cnt, epsilon, True)
-    # Let's sort the points to have them starting from topleft, counter-clockwise
-    v = [i[0][0]+i[0][1] for i in approx]
+    # Approximate the contours (and filter out the ones that do not have 4 edges)
+    appContours = [cv2.approxPolyDP(cnt,
+                                    0.1*cv2.arcLength(cnt, True),
+                                    True)
+                   for cnt in contours
+                   if len(cnt) >= 4]
+    appContours = [cnt for cnt in appContours if len(cnt) >= 4]
+    # The contour surrounding the page is the one with the longest segment
+    cnt = findContourWithLonguestSegment(appContours)
+    # Let's sort the points to have them counter-clockwise, starting from topleft
+    v = [i[0][0]+i[0][1] for i in cnt]
     topleft = v.index(min(v))
-    v = [i[0][0]-i[0][1] for i in approx]
+    v = [i[0][0]-i[0][1] for i in cnt]
     bottomleft = v.index(min(v))
-    v = [i[0][0]+i[0][1] for i in approx]
+    v = [i[0][0]+i[0][1] for i in cnt]
     bottomright = v.index(max(v))
-    v = [i[0][0]-i[0][1] for i in approx]
+    v = [i[0][0]-i[0][1] for i in cnt]
     topright = v.index(max(v))
     ordered_indexes = [topleft, bottomleft, bottomright, topright]
-    ordered_contour = [approx[i] for i in ordered_indexes]
+    ordered_contour = np.array([cnt[i] for i in ordered_indexes])
     return ordered_contour
 
 

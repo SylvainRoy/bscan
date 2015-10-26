@@ -6,6 +6,29 @@
  * check printing of pdf file generated
 
 
+# Flow
+
+## At image level
+
+> bscan.py -r r img.jpg
+> bscan.py -f img.jpg
+> bscan.py -c img.jpg
+> bscan.py -g img.jpg
+
+
+## At directory level
+
+> bscan.py -r r
+> bscan.py -s
+> bscan.py -f
+> bscan.py -c
+> bscan.py -g
+
+## Do it all command
+
+> bscan.py -a r
+
+
 # Procedure:
 
  * Set up the table
