@@ -147,10 +147,10 @@ def splitCommand(options, args):
             break
         i += 1
     # List pictures to isolate
-    print "Searching next black image: "
+    print("Searching next black image: ")
     index = 0
     for idx, imgfile in enumerate(imgfiles):
-        print imgfile
+        print(imgfile)
         img = cv2.imread(imgfile)
         index = idx
         if isBlack(img):
@@ -158,15 +158,15 @@ def splitCommand(options, args):
     # Move files
     if index != 0:
         imgtomove = imgfiles[:index]
-        print "\nThese files will be moved to {}: {}".format(folder, " ".join(imgtomove))
+        print("\nThese files will be moved to {}: {}".format(folder, " ".join(imgtomove)))
         if not options.dryrun:
             os.mkdir(folder)
             for f in imgtomove:
-                print f, os.path.join(".", folder, os.path.basename(f))
+                print(f, os.path.join(".", folder, os.path.basename(f)))
                 os.rename(f,
                           os.path.join(".", folder, os.path.basename(f)))
     else:
-        print "\nThis 'black' file will be removed to {}".format(imgfiles[0])
+        print("\nThis 'black' file will be removed to {}".format(imgfiles[0]))
         if not options.dryrun:
             os.remove(imgfiles[0])
 
@@ -181,7 +181,7 @@ def rotateCommand(options, args):
     imgfiles = inputFiles(options, args)
     # Rotate all the images
     for imgfile in imgfiles:
-        print "Rotating ", imgfile, "by an angle of", angle
+        print("Rotating ", imgfile, "by an angle of", angle)
         if not options.dryrun:
             img = cv2.imread(imgfile)
             img = rotateAboutCenter(img, angle)
@@ -193,7 +193,7 @@ def reframeCommand(options, args):
     imgfiles = inputFiles(options, args)
     # Reframe all the images
     for imgfile in imgfiles:
-        print "Reframing ", imgfile
+        print("Reframing ", imgfile)
         if not options.dryrun:
             img = cv2.imread(imgfile)
             contour = findPageContour(img)
@@ -209,7 +209,7 @@ def contrastCommand(options, args):
     imgfiles = inputFiles(options, args)
     # Reframe all the images
     for imgfile in imgfiles:
-        print "improving contrast of ", imgfile
+        print("improving contrast of ", imgfile)
         if not options.dryrun:
             img = cv2.imread(imgfile, 0)
             #cv2.equalizeHist(img)
@@ -279,7 +279,7 @@ def main():
     elif options.generate:
         generatePdfCommand(options, args)
     else:
-        print "Please choose a command."
+        print("Please choose a command.")
 
 
 if __name__ == '__main__':
