@@ -1,5 +1,4 @@
-_data
-_test_ref
+_*
 *.pyc
 .*
 @eaDir
